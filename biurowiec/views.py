@@ -9,7 +9,8 @@ szablon = """
     <body>
         <ul>
             <li>
-                <a href="">Dodaj nową salę</a>
+                <a href="/room/new">Dodaj nową salę</a>
+                <a href="/">Strona główna</a>
             </li>
         </ul>
         <div>
@@ -93,11 +94,11 @@ def index(reqest):
     for room in rooms:
         rows += """
         <tr>
-            <td>{}</td>
+            <td><a href="/room/{}">{}</a></td>
             <td><a href="#">Edytuj</a></td>
             <td><a href="#">Usuń</a></td>
         </tr>
-        """.format(room.name)
+        """.format(room.id, room.name)
     table = room_list_table.format(rows)
     return HttpResponse(szablon.format(table))
 
@@ -107,7 +108,8 @@ def room_detail(request, id):
         room = Room.objects.get(id=id)
         has_projector = 'TAK' if room.has_projector else 'NIE'
         room_result = szablon_room.format(room.name, room.capacity, has_projector)
-        return HttpResponse(room_result)
+
+        return HttpResponse(szablon.format(room_result))
     except ObjectDoesNotExist:
         return HttpResponse("Nie ma takiej sali.")
 
