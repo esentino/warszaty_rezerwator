@@ -1,7 +1,5 @@
+from django.core.exceptions import ObjectDoesNotExist
 from django.http import HttpResponse
-from django.shortcuts import render
-
-# Create your views here.
 from django.views.decorators.csrf import csrf_exempt
 
 from biurowiec.models import Room
@@ -55,6 +53,18 @@ room_list_table = """
 
 """
 
+szablon_room = """
+<p>
+    Nazwa: {}
+</p>
+<p>
+    Pojemność: {}
+</p>
+<p>
+    Posiada rzutnik: {}
+</p>
+"""
+
 @csrf_exempt
 def room_new(request):
     if request.method == "GET":
@@ -90,3 +100,14 @@ def index(reqest):
         """.format(room.name)
     table = room_list_table.format(rows)
     return HttpResponse(szablon.format(table))
+
+
+def room_detail(request, id):
+    try:
+        room = Room.objects.get(id=id)
+        has_projector = 'TAK' if room.has_projector else 'NIE'
+        room_result = szablon_room.format(room.name, room.capacity, has_projector)
+        return HttpResponse(room_result)
+    except ObjectDoesNotExist:
+        return HttpResponse("Nie ma takiej sali.")
+
