@@ -21,4 +21,5 @@ from biurowiec import views
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('room/new', views.room_new),
+    path('', views.index),
 ]

@@ -39,6 +39,21 @@ form_room = """
         </form>
     """
 
+room_list_table = """
+<table>
+    <thead>
+        <tr>
+            <th>Nazwa</th>
+            <th>Edycja</th>
+            <th>Usuwanie</th>
+        </tr>
+    </thead>
+    <tbody>
+        {}
+    </tbody>
+</table>
+
+"""
 
 @csrf_exempt
 def room_new(request):
@@ -60,3 +75,18 @@ def room_new(request):
             room.has_projector = False
         room.save()
         return HttpResponse("Sala została dodana")
+
+
+def index(reqest):
+    rooms = Room.objects.all()
+    rows = ""
+    for room in rooms:
+        rows += """
+        <tr>
+            <td>{}</td>
+            <td><a href="#">Edytuj</a></td>
+            <td><a href="#">Usuń</a></td>
+        </tr>
+        """.format(room.name)
+    table = room_list_table.format(rows)
+    return HttpResponse(szablon.format(table))
