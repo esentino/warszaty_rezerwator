@@ -96,6 +96,10 @@ form_reservation = """
         Data rezerwacji:
         <input type="date" name="date">
     </label>
+    <label>
+        Komentarz:
+        <input type="textarea" name="comment">
+    </label>
     <input type="submit" value="Dodaj rezerwację">
 </form>
 """
