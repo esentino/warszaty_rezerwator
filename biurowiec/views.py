@@ -70,6 +70,25 @@ room_list_table = """
         {}
     </tbody>
 </table>
+<h2>Wyszukiwarka</h2>
+<form action="/search" method="GET">
+    <label>
+        Nazwa:
+        <input type="text" name="name">
+    </label>
+    <label>
+        Minimalna pojemność:
+        <input type="number" name="capacity" min="1">
+    </label>
+    <label>
+        Dzień:
+        <input type="date" name="date">
+    </label>
+        Czy posiada rzutnik:
+        <input type="checkbox" name="has_projector" value="1">
+    </label>
+    <input type="submit" value="Wyszukaj wolną salę">
+</form>
 
 """
 
@@ -207,3 +226,34 @@ def reservation_new(request, id):
         reservation.comment = comment
         reservation.save()
         return HttpResponseRedirect("/")
+
+
+def search(request):
+    name = request.GET.get('name')
+    capacity = request.GET.get('capacity')
+    string_date = request.GET.get('date')
+    has_projector = request.GET.get('has_projector')
+    print(name, capacity,string_date, has_projector)
+    valid_name= name is not None and name != ''
+    valid_capacity = capacity is not None and capacity != ''
+    if valid_name and valid_capacity:
+        if has_projector == "1":
+            rooms = Room.objects.filter(name__contains=name).filter(capacity__gte=capacity).filter(has_projector=True)
+        else:
+            rooms = Room.objects.filter(name__contains=name).filter(capacity__gte=capacity).filter(has_projector=False)
+
+        rows = ""
+        for room in rooms:
+            if room.reservation_set.filter(date=string_date).count() == 0:
+                rows += """
+                    <tr>
+                        <td><a href="/room/{}">{}</a></td>
+                        <td><a href="/room/modify/{}">Edytuj</a></td>
+                        <td><a href="/room/delete/{}">Usuń</a></td>
+                    </tr>
+                    """.format(room.id, room.name, room.id, room.id)
+        if rows == "":
+            rows = "Brak wyników"
+        table = room_list_table.format(rows)
+        return HttpResponse(szablon.format(table))
+    return HttpResponse(szablon.format("Nie wypełniony cały formularz"))
