@@ -148,14 +148,19 @@ def room_new(request):
 def index(reqest):
     rooms = Room.objects.all()
     rows = ""
+    today = datetime.now().date()
     for room in rooms:
+        reservation_exists = (room.reservation_set.filter(date=today).count() > 0)
+        msg = "sala wolna"
+        if reservation_exists:
+            msg = "sala zajęta"
         rows += """
         <tr>
-            <td><a href="/room/{}">{}</a></td>
+            <td><a href="/room/{}">{} ({})</a></td>
             <td><a href="/room/modify/{}">Edytuj</a></td>
             <td><a href="/room/delete/{}">Usuń</a></td>
         </tr>
-        """.format(room.id, room.name, room.id, room.id)
+        """.format(room.id, room.name, msg, room.id, room.id)
     table = room_list_table.format(rows)
     return HttpResponse(szablon.format(table))
 
