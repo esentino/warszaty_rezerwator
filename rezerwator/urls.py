@@ -24,5 +24,6 @@ urlpatterns = [
     re_path('room/(?P<id>\d+)', views.room_detail),
     re_path('room/modify/(?P<id>\d+)', views.room_modify),
     re_path('room/delete/(?P<id>\d+)', views.room_delete),
+    re_path('reservation/(?P<id>\d+)',views.reservation_new),
     path('', views.index),
 ]

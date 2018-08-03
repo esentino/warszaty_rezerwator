@@ -1,8 +1,9 @@
+from datetime import datetime
 from django.core.exceptions import ObjectDoesNotExist
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpResponseRedirect
 from django.views.decorators.csrf import csrf_exempt
 
-from biurowiec.models import Room
+from biurowiec.models import Room, Reservation
 
 szablon = """
 <html>
@@ -82,6 +83,21 @@ szablon_room = """
 <p>
     Posiada rzutnik: {}
 </p>
+<p>Dodaj rezerwację:
+</p>
+<p>
+    {}
+</p>
+"""
+
+form_reservation = """
+<form action="/reservation/{}" method="POST">
+    <label>
+        Data rezerwacji:
+        <input type="date" name="date">
+    </label>
+    <input type="submit" value="Dodaj rezerwację">
+</form>
 """
 
 @csrf_exempt
@@ -125,7 +141,7 @@ def room_detail(request, id):
     try:
         room = Room.objects.get(id=id)
         has_projector = 'TAK' if room.has_projector else 'NIE'
-        room_result = szablon_room.format(room.name, room.capacity, has_projector)
+        room_result = szablon_room.format(room.name, room.capacity, has_projector, form_reservation.format(room.id))
 
         return HttpResponse(szablon.format(room_result))
     except ObjectDoesNotExist:
@@ -165,3 +181,25 @@ def room_delete(request, id):
         return HttpResponse(szablon.format("Sala została usunięta."))
     except ObjectDoesNotExist:
         return HttpResponse(szablon.format("Nie ma takiej sali."))
+
+
+@csrf_exempt
+def reservation_new(request, id):
+    try:
+        room = Room.objects.get(id=id)
+    except ObjectDoesNotExist:
+        return HttpResponse(szablon.format("Nie ma takiej sali"))
+    if request.method == "POST":
+        comment = request.POST.get('comment')
+        date_sting = request.POST.get("date")
+        date = datetime.strptime(date_sting, '%Y-%m-%d').date()
+        reservation_exists = (room.reservation_set.filter(date=date).count() > 0)
+        today= datetime.now().date()
+        if date < today or reservation_exists:
+            return HttpResponse(szablon.format("Nie można zarezerwować sali w przeszłości lub sala jest zarezerowana na dany dzień"))
+        reservation = Reservation()
+        reservation.date = date
+        reservation.room = room
+        reservation.comment = comment
+        reservation.save()
+        return HttpResponseRedirect("/")
