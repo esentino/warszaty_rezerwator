@@ -22,5 +22,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('room/new', views.room_new),
     re_path('room/(?P<id>\d+)', views.room_detail),
+    re_path('room/modify/(?P<id>\d+)', views.room_modify),
+    re_path('room/delete/(?P<id>\d+)', views.room_delete),
     path('', views.index),
 ]
